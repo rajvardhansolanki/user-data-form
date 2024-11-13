@@ -1,18 +1,17 @@
-import { useRef, useState } from 'react';
-// import ReactPlayer from 'react-player';
-import './App.css';
-// import UserForm from "./components/userForm/userForm";
-import Navbar from './components/navbar/Navbar';
-import PlaylistComponent from './components/playList/PlaylistComponent';
-import { playlistData } from './jsonData/MusicData';
+import React, { useRef, useState } from 'react';
+import ReactPlayer from 'react-player';
 
-function App() {
-  const [duration, setDuration] = useState(0); // To store the duration of the audio
-  const [currentTime, setCurrentTime] = useState(10); // To track the current time
-  const [playing, setPlaying] = useState(false); // To toggle play/pause
+const AudioPlayer = ({ song }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  console.log('song', song)
+
+  const toggleExpand = () => setIsExpanded(!isExpanded);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(10);
+  const [playing, setPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState("https://samplesongs.netlify.app/Death%20Bed.mp3"); // Sample audio URL
 
-  const playerRef = useRef(null); // Reference to ReactPlayer for c4ontrol
+  const playerRef = useRef(null);
 
   const onDuration = (duration) => {
     setDuration(duration);
@@ -29,15 +28,13 @@ function App() {
   };
 
   const handleNext = () => {
-    // Set the next track URL here
     setAudioUrl("https://samplesongs.netlify.app/Another%20Track.mp3");
-    setPlaying(true); // Start playing the next track automatically
+    setPlaying(true);
   };
 
   const handlePrev = () => {
-    // Set the previous track URL here
     setAudioUrl("https://samplesongs.netlify.app/Death%20Bed.mp3");
-    setPlaying(true); // Start playing the previous track automatically
+    setPlaying(true);
   };
 
   const onProgress = (state) => {
@@ -67,43 +64,51 @@ function App() {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();  // Parse the response body as JSON
-      return data;  // Return the parsed JSON data
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error fetching data:", error.message);
-      throw error;  // Re-throw the error for further handling
+      throw error;
     }
   };
 
-  // Using the async function with await inside another async function
   const getData = async () => {
     try {
       const data = await fetchMusicData("photos", "");
-      console.log("data===>>>>>>>>>>>>>>>>>>>", data);  // Log the data
+      console.log("data===>>>>>>>>>>>>>>>>>>>", data);
     } catch (error) {
       console.error("Failed to fetch data", error);
     }
   };
 
-  // Call the async function
   getData();
 
-
   return (
-    <div className="w-full h-screen">
-      <Navbar />
-      <PlaylistComponent playlist={playlistData}/>
-      {/* <div className="player-container">
-        <ReactPlayer
-          ref={playerRef}
-          url={audioUrl}
-          playing={playing}
-          controls={false} // Hide default controls
-          onDuration={onDuration}
-          onProgress={onProgress}
-          width="100%"
-          height="100px" // You can customize the height
-        />
+    <div className="fixed bottom-0 left-0 w-full bg-gray-900 p-4 shadow-lg">
+      <div className="w-full flex flex-col items-center space-x-4">
+        <div className='flex w-full pb-4'>
+          <img
+            src={song.thumbnail}
+            alt={`${song.title} thumbnail`}
+            className="w-12 h-12 rounded-md mx-4"
+          />
+          <div className="flex-1">
+            <p className="font-semibold text-lg">{song.title}</p>
+            <p className="text-sm text-gray-400">{song.artist}</p>
+          </div>
+        </div>
+        <div className='hidden'>
+          <ReactPlayer
+            ref={playerRef}
+            url={audioUrl}
+            playing={playing}
+            controls={false}
+            onDuration={onDuration}
+            onProgress={onProgress}
+            width="100%"
+            height="100px"
+          />
+        </div>
 
         <div className="audio-controls">
           <button className="prev-btn" onClick={handlePrev}>
@@ -138,14 +143,22 @@ function App() {
 
           <span className="duration">{`${formatTime(currentTime)} / ${formatTime(duration)}`}</span>
         </div>
-      </div> */}
+      </div>
 
-      {/* <header className="w-full py-2 flex justify-center items-center bg-[#091057] text-white">
-        User Form
-      </header>
-      <UserForm /> */}
+      {isExpanded && (
+        <div className="mt-4 space-y-2 text-gray-300">
+          <p>Album: {song.album}</p>
+          <p>Duration: {song.duration}</p>
+        </div>
+      )}
+      <button
+        onClick={toggleExpand}
+        className="text-white mt-2"
+      >
+        {isExpanded ? 'Less Info' : 'More Info'}
+      </button>
     </div>
   );
-}
+};
 
-export default App;
+export default AudioPlayer;
